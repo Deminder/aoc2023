@@ -5,6 +5,7 @@ use std::{
 
 mod day1;
 mod day2;
+mod day3;
 
 pub enum PuzzleInput {
     FileLines(Lines<BufReader<File>>),
@@ -37,6 +38,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
     match day {
         1 => Some(day1::solution),
         2 => Some(day2::solution),
+        3 => Some(day3::solution),
         _ => None,
     }
 }

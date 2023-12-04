@@ -1,62 +1,26 @@
 use std::{ops::Range, rc::Rc};
 
 use itertools::Itertools;
+use regex::Regex;
 
 use crate::PuzzleInput;
 
-fn engine_at<const N: usize>(lines: [&Vec<char>; N], position: usize) -> bool {
-    lines.into_iter().any(|line| {
-        line.get(position)
-            .is_some_and(|c| *c != '.' && !c.is_digit(10))
-    })
+struct GridLine {
+    symbol_ranges: Vec<Range<usize>>,
+    number_ranges: Vec<Range<usize>>,
+    line: String,
 }
 
-fn has_adjacent_engine(
-    range: Range<usize>,
-    line_up: &Vec<char>,
-    line_mid: &Vec<char>,
-    line_down: &Vec<char>,
-) -> bool {
-    let all_lines = [line_up, line_mid, line_down];
-    (range.start > 0 && engine_at(all_lines, range.start - 1))
-        || engine_at(all_lines, range.end)
-        || range
-            .into_iter()
-            .any(|p| engine_at([line_up, line_down], p))
-}
-
-fn line_number_ranges<'a>(line: &'a Vec<char>) -> impl Iterator<Item = Range<usize>> + 'a {
-    line.iter()
-        .chain([&'.'].into_iter())
-        .enumerate()
-        .scan(None as Option<usize>, |start, (pos, c)| {
-            let is_num = c.is_digit(10);
-            if start.is_some() {
-                if !is_num {
-                    // End of number range
-                    let s = start.unwrap();
-                    *start = None;
-                    Some(Some(s..pos))
-                } else {
-                    Some(None)
-                }
-            } else {
-                if is_num {
-                    // Start of number range
-                    *start = Some(pos);
-                }
-                Some(None)
-            }
-        })
-        .filter_map(|v| v)
-}
-
-fn line_range_number(line: &Vec<char>, range: Range<usize>) -> u32 {
-    line[range]
-        .into_iter()
-        .flat_map(|c| c.to_digit(10))
-        .reduce(|acc, d| 10 * acc + d)
-        .unwrap()
+impl GridLine {
+    fn new(line: String, symbol_regex: &Regex, number_regex: &Regex) -> Self {
+        let [symbol_ranges, number_ranges] = [symbol_regex, number_regex]
+            .map(|regex| regex.find_iter(&line).map(|m| m.range()).collect_vec());
+        Self {
+            line,
+            symbol_ranges,
+            number_ranges,
+        }
+    }
 }
 
 fn range_intersect(range1: &Range<usize>, range2: &Range<usize>) -> bool {
@@ -65,23 +29,37 @@ fn range_intersect(range1: &Range<usize>, range2: &Range<usize>) -> bool {
     max_start < min_end
 }
 
-fn gear_ratio(
-    gear_position: usize,
-    lines_and_ranges_cache: &[(Rc<Vec<char>>, Vec<Range<usize>>); 3],
-) -> Option<u32> {
+fn part_number(number_str: &str, range: &Range<usize>, lines: [&GridLine; 3]) -> Option<u32> {
+    let adjacent_range = if range.start > 0 {
+        range.start - 1
+    } else {
+        range.start
+    }..range.end + 1;
+    if lines.iter().any(|line| {
+        line.symbol_ranges
+            .iter()
+            .any(|r| range_intersect(r, &adjacent_range))
+    }) {
+        Some(number_str.parse().unwrap())
+    } else {
+        None
+    }
+}
+
+fn gear_ratio(gear_position: usize, lines: [&GridLine; 3]) -> Option<u32> {
     // If exaclty two numbers are adjacent to '*', return their product
     let adjacent_range = if gear_position > 0 {
         gear_position - 1
     } else {
         gear_position
     }..gear_position + 2;
-    lines_and_ranges_cache
+    lines
         .iter()
-        .flat_map(|(line, ranges)| {
-            ranges
+        .flat_map(|line| {
+            line.number_ranges
                 .iter()
                 .filter(|r| range_intersect(r, &adjacent_range))
-                .map(|r| line_range_number(line, r.clone()))
+                .map(|r| line.line[r.clone()].parse::<u32>().unwrap())
         })
         .collect_tuple()
         // Product of the two numbers is the "gear ratio"
@@ -89,28 +67,25 @@ fn gear_ratio(
 }
 
 fn run(input: PuzzleInput, part2: bool) -> u32 {
+    let number_regex = Regex::new(r"\d+").unwrap();
+    let symbol_regex = Regex::new(if part2 { r"\*" } else { r"[^\.\d]" }).unwrap();
     // Pad start and end of grid with an empty line
-    let empty_line = Rc::new(vec![]);
+    let empty_line = Rc::new(GridLine::new("".into(), &symbol_regex, &number_regex));
     [empty_line.clone()]
         .into_iter()
-        .chain(input.map(|line| Rc::new(line.chars().collect_vec())))
+        .chain(input.map(|line| Rc::new(GridLine::new(line, &symbol_regex, &number_regex))))
         .chain([empty_line].into_iter())
         .tuple_windows()
         .map(|(prev, cur, next)| {
             if part2 {
-                let lines_and_ranges_cache = [&prev, &cur, &next]
-                    .map(|line| (line.clone(), line_number_ranges(line).collect_vec()));
-                cur.iter()
-                    .enumerate()
-                    .filter(|(_, &c)| c == '*')
-                    .filter_map(|(gear_position, _)| {
-                        gear_ratio(gear_position, &lines_and_ranges_cache)
-                    })
+                cur.symbol_ranges
+                    .iter()
+                    .filter_map(|r| gear_ratio(r.start, [&prev, &cur, &next]))
                     .sum::<u32>()
             } else {
-                line_number_ranges(&cur)
-                    .filter(|r| has_adjacent_engine(r.clone(), &prev, &cur, &next))
-                    .map(|r| line_range_number(&cur, r.clone()))
+                cur.number_ranges
+                    .iter()
+                    .filter_map(|r| part_number(&cur.line[r.clone()], r, [&prev, &cur, &next]))
                     .sum()
             }
         })

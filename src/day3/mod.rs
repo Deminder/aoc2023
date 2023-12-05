@@ -47,7 +47,7 @@ fn part_number(number_str: &str, range: &Range<usize>, lines: [&GridLine; 3]) ->
 }
 
 fn gear_ratio(gear_position: usize, lines: [&GridLine; 3]) -> Option<u32> {
-    // If exaclty two numbers are adjacent to '*', return their product
+    // If exactly two numbers are adjacent to '*', return their product
     let adjacent_range = if gear_position > 0 {
         gear_position - 1
     } else {

@@ -13,10 +13,11 @@ Options:
   -V, --version            Print version
 ```
 
-To get solutions of part 1+2 for day `n`, given the puzzle input in `src/day{n}/input.txt`, run:
+You get answers for part `1` and `2` by running:
 ```sh
 ./runday.sh $n
 ```
+if you place your puzzle input for day `n` in `src/day{n}/input.txt` or put a AOC session key into `session.txt`.
 
 The tests of day `n` may be run by:
 ```shell

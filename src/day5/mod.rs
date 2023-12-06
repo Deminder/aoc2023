@@ -73,24 +73,28 @@ impl RangeMapping {
 }
 
 fn run(mut input: PuzzleInput, part2: bool) -> u64 {
-    let first_line = input.next().unwrap();
-    let (_, seeds_list) = first_line.splitn(2, ':').collect_tuple().unwrap();
-    let seed_nums = seeds_list
-        .split(' ')
-        .filter_map(|num| num.parse::<u64>().ok());
+    let seeds = {
+        // Parse seeds
+        let first_line = input.next().unwrap();
+        let (_, seeds_list) = first_line.splitn(2, ':').collect_tuple().unwrap();
+        let seed_nums = seeds_list
+            .split(' ')
+            .filter_map(|num| num.parse::<u64>().ok());
 
-    let seeds = if part2 {
-        seed_nums
-            .chunks(2)
-            .into_iter()
-            .filter_map(|nums| nums.collect_tuple())
-            .map(|(start, len)| start..start + len)
-            .collect_vec()
-    } else {
-        seed_nums.map(|start| start..start + 1).collect_vec()
+        if part2 {
+            seed_nums
+                .chunks(2)
+                .into_iter()
+                .filter_map(|nums| nums.collect_tuple())
+                .map(|(start, len)| start..start + len)
+                .collect_vec()
+        } else {
+            seed_nums.map(|start| start..start + 1).collect_vec()
+        }
     };
 
-    let ranges = input
+    let locations = input
+        // Parse range mappings
         .scan(0, |step, line| {
             if line.ends_with("map:") {
                 *step += 1;
@@ -101,17 +105,15 @@ fn run(mut input: PuzzleInput, part2: bool) -> u64 {
         .into_iter()
         .filter(|(step, _)| *step > 0)
         .map(|(_, lines)| RangeMapping::new(lines.map(|(_, l)| l)))
-        .collect_vec();
-
-    let locations = ranges
         .into_iter()
+        // Transform from "seeds" to "locations" by applying all mappings
         .fold(seeds, |mapped_values, range_mapping| {
-            let values = mapped_values
+            mapped_values
                 .into_iter()
                 .flat_map(|range| range_mapping.transform(range))
-                .collect_vec();
-            values
+                .collect_vec()
         });
+
     locations.into_iter().map(|r| r.start).min().unwrap()
 }
 

@@ -13,7 +13,7 @@ fn record_beating_range(race_duration: f64, record_distance: f64) -> Option<Rang
     } else {
         let t2 = race_duration / 2.0;
         let start = 0.max((t2 - sqrt_part).trunc() as i32 + 1) as u64;
-        let end = 0.max((t2 + sqrt_part).ceil() as u64);
+        let end = start.max((t2 + sqrt_part).ceil() as u64);
         Some(start..end)
     }
 }

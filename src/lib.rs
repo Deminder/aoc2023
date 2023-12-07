@@ -9,6 +9,7 @@ mod day3;
 mod day4;
 mod day5;
 mod day6;
+mod day7;
 
 pub enum PuzzleInput {
     FileLines(Lines<BufReader<File>>),
@@ -45,6 +46,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
         4 => Some(day4::solution),
         5 => Some(day5::solution),
         6 => Some(day6::solution),
+        7 => Some(day7::solution),
         _ => None,
     }
 }

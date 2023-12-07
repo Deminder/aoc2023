@@ -74,7 +74,7 @@ fn run(input: PuzzleInput, part2: bool) -> u32 {
     [empty_line.clone()]
         .into_iter()
         .chain(input.map(|line| Rc::new(GridLine::new(line, &symbol_regex, &number_regex))))
-        .chain([empty_line].into_iter())
+        .chain([empty_line])
         .tuple_windows()
         .map(|(prev, cur, next)| {
             if part2 {

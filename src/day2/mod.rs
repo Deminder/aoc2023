@@ -49,8 +49,8 @@ struct Game {
 
 impl Game {
     fn new(line: &str) -> Self {
-        let (label, listing) = line.splitn(2, ":").collect_tuple().unwrap();
-        let hands = listing.split(';').map(|r| Bag::new(r));
+        let (label, listing) = line.splitn(2, ':').collect_tuple().unwrap();
+        let hands = listing.split(';').map(Bag::new);
         Self {
             id: label.splitn(2, ' ').last().unwrap().parse().unwrap(),
             minimum_bag: hands.reduce(|min_bag, bag| min_bag.grow_to(&bag)).unwrap(),

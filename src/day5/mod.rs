@@ -50,7 +50,7 @@ impl RangeMapping {
             // Transform intersecting ranges, otherwise leave unchanged
             // Each intersecting range produces an unchanged and transformed range
             // A dummy intersection ensures that the last unchanged region is also included:
-            .chain([(range.end..range.end, 0, 0)].into_iter())
+            .chain([(range.end..range.end, 0, 0)])
             .scan(
                 range.start,
                 |unchanged_start, (intersection, destination, intersect_offset)| {
@@ -105,7 +105,6 @@ fn run(mut input: PuzzleInput, part2: bool) -> u64 {
         .into_iter()
         .filter(|(step, _)| *step > 0)
         .map(|(_, lines)| RangeMapping::new(lines.map(|(_, l)| l)))
-        .into_iter()
         // Transform from "seeds" to "locations" by applying all mappings
         .fold(seeds, |mapped_values, range_mapping| {
             mapped_values

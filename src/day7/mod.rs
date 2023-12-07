@@ -1,5 +1,6 @@
 use std::cmp::Ordering;
 
+use anyhow::{anyhow, Context, Result};
 use itertools::Itertools;
 
 use crate::PuzzleInput;
@@ -24,23 +25,33 @@ fn char_to_joke_strength(c: char) -> u8 {
 struct Hand {
     card_strengths: [u8; CARDS],
     hand_type: u8,
+    bet: u32,
 }
 
 impl Hand {
-    fn parse(hand: &str, part2: bool) -> Self {
-        let card_strengths = array_init::from_iter(hand.chars()).unwrap().map(if part2 {
+    fn parse(line: &str, part2: bool) -> Result<Self> {
+        let (hand, bet) = line
+            .splitn(2, ' ')
+            .collect_tuple()
+            .ok_or(anyhow!("expect space"))?;
+        let bet = bet.parse::<u32>().with_context(|| "expect bet number")?;
+        let hand_chars = array_init::from_iter(hand.chars())
+            .ok_or_else(|| anyhow!("expect {CARDS} cards in hand"))?;
+
+        let card_strengths = hand_chars.map(if part2 {
             char_to_joke_strength
         } else {
             char_to_strength
         });
-        Self {
-            hand_type: Self::strengths_to_type(&card_strengths, part2),
+        Ok(Self {
             card_strengths,
-        }
+            hand_type: Self::strengths_to_type(&card_strengths, part2),
+            bet,
+        })
     }
 
     fn strengths_to_type(card_strengths: &[u8; CARDS], joker_wildcard: bool) -> u8 {
-        let mut strength_counts = [0 as u8; 13];
+        let mut strength_counts = [0_u8; 13];
         for strength in card_strengths {
             strength_counts[*strength as usize] += 1;
         }
@@ -85,15 +96,12 @@ impl Ord for Hand {
 
 fn run(input: PuzzleInput, part2: bool) -> u32 {
     input
-        .flat_map(|line| {
-            line.splitn(2, ' ')
-                .collect_tuple()
-                .map(|(hand, bet)| (Hand::parse(hand, part2), bet.parse::<u32>().unwrap()))
-        })
-        .sorted_by(|(a, _), (b, _)| a.cmp(&b))
+        .filter(|line| !line.is_empty())
+        .map(|line| Hand::parse(&line, part2).unwrap())
+        .sorted()
         .enumerate()
         //.inspect(|(rank, (hand, bet))| println!("{rank}: {hand:?} {bet}"))
-        .map(|(rank, (_, bet))| (rank as u32 + 1) * bet)
+        .map(|(rank, hand)| (rank as u32 + 1) * hand.bet)
         .sum()
 }
 

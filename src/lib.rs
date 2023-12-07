@@ -29,11 +29,9 @@ impl Iterator for PuzzleInput {
     }
 }
 
-impl Into<PuzzleInput> for &'static str {
-    fn into(self) -> PuzzleInput {
-        PuzzleInput::StringLines(Box::new(
-            self.split('\n').into_iter().map(|ss| ss.to_string()),
-        ))
+impl From<&'static str> for PuzzleInput {
+    fn from(val: &'static str) -> Self {
+        PuzzleInput::StringLines(Box::new(val.split('\n').map(|ss| ss.to_string())))
     }
 }
 pub type PuzzleSolutionFn = fn(PuzzleInput, bool) -> String;

@@ -42,17 +42,20 @@ fn run(input: PuzzleInput, part2: bool) -> u32 {
         .map(|line| Card::new(&line).match_count());
 
     if part2 {
-        match_counts.scan(VecDeque::new(), |copies, match_count| {
-            let card_count = 1 + copies.pop_front().unwrap_or(0);
-            let queue_cap = match_count.min(copies.len());
-            for offset in 0..queue_cap {
-                copies[offset] += card_count;
-            }
-            for _ in queue_cap..match_count {
-                copies.push_back(card_count);
-            }
-            Some(card_count)
-        }).sum()
+        match_counts
+            .scan(VecDeque::new(), |copies, match_count| {
+                let card_count = 1 + copies.pop_front().unwrap_or(0);
+                let queue_len = copies.len();
+                for offset in 0..match_count {
+                    if offset < queue_len {
+                        copies[offset] += card_count;
+                    } else {
+                        copies.push_back(card_count);
+                    }
+                }
+                Some(card_count)
+            })
+            .sum()
     } else {
         match_counts.filter(|c| *c > 0).map(|c| 1 << (c - 1)).sum()
     }

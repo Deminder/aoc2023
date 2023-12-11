@@ -25,3 +25,19 @@ num-integer = "0.1.45"
 num-complex = "0.4.4"
 bitvec = { version = "1", default-features = false, features = ["alloc"]}
 termion = "*"
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+iai-callgrind = "0.9.0"
+
+[[bench]]
+name = "cri"
+harness = false
+
+[[bench]]
+name = "iai"
+harness = false
+
+[profile.bench]
+debug = true
+

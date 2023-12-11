@@ -236,6 +236,7 @@ fn run(input: PuzzleInput, part2: bool) -> usize {
         let walk_iter = grid.walk();
         let mut last_forward = walk_iter.walk_direction;
         let mut right_turns: isize = 0;
+        let mut moves = vec![];
         for (pos, forward) in walk_iter {
             right_turns += if last_forward == forward {
                 0
@@ -246,28 +247,23 @@ fn run(input: PuzzleInput, part2: bool) -> usize {
             };
             last_forward = forward;
             no_pipes.set(pos, false);
+            moves.push((pos, forward));
         }
 
-        // Fill non-pipe fields to the left and right of the walking direction
-        let mut left_field = bitvec!(0; size);
-        let mut right_field = bitvec!(0; size);
-        for (pos, forward) in grid.walk() {
-            for (field, dir) in [
-                (&mut left_field, forward.left()),
-                (&mut right_field, forward.right()),
-            ] {
-                if grid.move_possible(pos, dir) {
-                    flood_fill_empty(field, grid.move_pos(pos, dir), &no_pipes, &grid)
-                }
+        // Fill inner non-pipe fields
+        // -> Expect inner on the right if more right turns than left turns
+        let mut inner_field = bitvec!(0; size);
+        for (pos, forward) in moves {
+            let dir = if right_turns > 0 {
+                forward.right()
+            } else {
+                forward.left()
+            };
+            if grid.move_possible(pos, dir) {
+                flood_fill_empty(&mut inner_field, grid.move_pos(pos, dir), &no_pipes, &grid)
             }
         }
-        // Expect inner on the right if more right turns than left turns
-        if right_turns > 0 {
-            right_field
-        } else {
-            left_field
-        }
-        .count_ones()
+        inner_field.count_ones()
     } else {
         (grid.walk().count() + 1) / 2
     }

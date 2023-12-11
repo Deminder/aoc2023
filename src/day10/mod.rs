@@ -230,7 +230,6 @@ fn flood_fill_empty(field: &mut BitVec, start_pos: Pos, empty: &BitVec, grid: &P
 fn run(input: PuzzleInput, part2: bool) -> usize {
     let grid = PipeGrid::parse(input);
     if part2 {
-
         // Mark non-pipes by walking the pipe loop
         let size = grid.width * grid.width;
         let mut no_pipes = bitvec!(1; size);

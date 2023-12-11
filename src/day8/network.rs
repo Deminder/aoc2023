@@ -69,14 +69,11 @@ impl Index<Node> for NodeNetwork {
 
 impl FromIterator<[Node; 3]> for NodeNetwork {
     fn from_iter<T: IntoIterator<Item = [Node; 3]>>(iter: T) -> Self {
-        Self(iter.into_iter().fold(
-            [(EMPTY_NODE, EMPTY_NODE); NODE_COUNT],
-            |mut network, node_connection| {
-                let [start, left, right] = node_connection;
-                network[start.index()] = (left, right);
-                network
-            },
-        ))
+        let mut network = [(EMPTY_NODE, EMPTY_NODE); NODE_COUNT];
+        for [start, left, right] in iter.into_iter() {
+            network[start.index()] = (left, right);
+        }
+        Self(network)
     }
 }
 

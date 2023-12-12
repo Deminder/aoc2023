@@ -72,28 +72,32 @@ fn arrangements(line: &str, part2: bool) -> usize {
         .collect_vec();
 
     // Start with a run of Damaged which ends at index 0
-    let mut run_ending_counts = vec![(0_usize, 1_usize)];
+    let empty_run_ending_counts = [0_usize].repeat(conditions.len() + 2);
+    let mut run_ending_counts = empty_run_ending_counts.clone();
+    run_ending_counts[0] = 1;
     for (run_length, remaining) in run_lengths.into_iter().zip_eq(remaining_run_lengths) {
+        let mut next_run_ending_counts = empty_run_ending_counts.clone();
         // Count run endings
-        run_ending_counts = run_ending_counts
+        for (start, count) in run_ending_counts
             .into_iter()
-            .filter(|(start, _)| {
+            .enumerate()
+            .filter(|(start, count)| {
+                *count > 0 &&
                 // Discard arrangement counts if run_length (+ tail) does not fit in remaining space
                 run_length + if remaining == 0 { 0 } else { remaining + 1 }
                     <= conditions.len() - start
             })
             .flat_map(|(start, count)| {
                 run_endings(&conditions[start..conditions.len() - remaining], run_length)
+                    // Index after tail (e.g. at '?' for '###.?') becomes next start
                     // Each ending can be reached by `count` combinations
                     .map(move |e| (start + e + 1, count))
             })
-            .sorted_by_key(|(ending, _)| *ending)
-            // Index after tail (e.g. at '?' for '###.?') becomes next start
-            .group_by(|(next_start, _)| *next_start)
-            .into_iter()
-            // Sum combinations counts with the same ending
-            .map(|(start, counts)| (start, counts.map(|(_, c)| c).sum()))
-            .collect_vec();
+        {
+            // Sum combination counts with the same ending
+            next_run_ending_counts[start] += count;
+        }
+        run_ending_counts = next_run_ending_counts;
     }
     // Ensure that all arrangements include the last Damaged
     let lowest_ending = conditions.len()
@@ -105,6 +109,7 @@ fn arrangements(line: &str, part2: bool) -> usize {
 
     run_ending_counts
         .into_iter()
+        .enumerate()
         .filter(|(i, _)| *i >= lowest_ending)
         .map(|(_, c)| c)
         .sum()

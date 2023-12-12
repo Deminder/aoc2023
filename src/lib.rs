@@ -6,6 +6,7 @@ use std::{
 mod day1;
 mod day10;
 mod day11;
+mod day12;
 mod day2;
 mod day3;
 mod day4;
@@ -54,6 +55,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
         9 => Some(day9::solution),
         10 => Some(day10::solution),
         11 => Some(day11::solution),
+        12 => Some(day12::solution),
         _ => None,
     }
 }

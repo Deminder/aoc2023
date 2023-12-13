@@ -7,6 +7,7 @@ mod day1;
 mod day10;
 mod day11;
 mod day12;
+mod day13;
 mod day2;
 mod day3;
 mod day4;
@@ -20,6 +21,18 @@ pub enum PuzzleInput {
     FileLines(Lines<BufReader<File>>),
     StdinLines(Lines<StdinLock<'static>>),
     StringLines(Box<dyn Iterator<Item = String>>),
+}
+
+#[macro_export]
+macro_rules! split_by_empty_line {
+    ($input: expr) => {
+        $input
+            .group_by(|line| line.is_empty())
+            .into_iter()
+            .skip_while(|(empty, _)| *empty)
+            .step_by(2)
+            .map(|(_, lines)| lines)
+    };
 }
 
 impl Iterator for PuzzleInput {
@@ -56,6 +69,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
         10 => Some(day10::solution),
         11 => Some(day11::solution),
         12 => Some(day12::solution),
+        13 => Some(day13::solution),
         _ => None,
     }
 }

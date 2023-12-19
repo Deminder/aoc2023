@@ -1,6 +1,7 @@
 use std::{
     fs::File,
     io::{BufReader, Lines, StdinLock},
+    ops::Range,
 };
 
 mod day1;
@@ -12,6 +13,7 @@ mod day14;
 mod day15;
 mod day16;
 mod day17;
+mod day18;
 mod day2;
 mod day3;
 mod day4;
@@ -37,6 +39,16 @@ macro_rules! split_by_empty_line {
             .step_by(2)
             .map(|(_, lines)| lines)
     };
+}
+
+fn range_intersect<T: Ord + Copy>(range1: &Range<T>, range2: &Range<T>) -> Option<Range<T>> {
+    let max_start = range1.start.max(range2.start);
+    let min_end = range1.end.min(range2.end);
+    if max_start < min_end {
+        Some(max_start..min_end)
+    } else {
+        None
+    }
 }
 
 impl Iterator for PuzzleInput {
@@ -78,6 +90,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
         15 => Some(day15::solution),
         16 => Some(day16::solution),
         17 => Some(day17::solution),
+        18 => Some(day18::solution),
         _ => None,
     }
 }

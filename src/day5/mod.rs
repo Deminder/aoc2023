@@ -2,17 +2,7 @@ use std::ops::Range;
 
 use itertools::Itertools;
 
-use crate::PuzzleInput;
-
-fn range_intersect(range1: &Range<u64>, range2: &Range<u64>) -> Option<Range<u64>> {
-    let max_start = range1.start.max(range2.start);
-    let min_end = range1.end.min(range2.end);
-    if max_start < min_end {
-        Some(max_start..min_end)
-    } else {
-        None
-    }
-}
+use crate::{range_intersect, PuzzleInput};
 
 #[derive(Debug)]
 struct RangeMapping {

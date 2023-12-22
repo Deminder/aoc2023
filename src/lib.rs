@@ -16,6 +16,7 @@ mod day17;
 mod day18;
 mod day19;
 mod day2;
+mod day20;
 mod day3;
 mod day4;
 mod day5;
@@ -93,6 +94,7 @@ pub fn puzzle_by_day(day: usize) -> Option<PuzzleSolutionFn> {
         17 => Some(day17::solution),
         18 => Some(day18::solution),
         19 => Some(day19::solution),
+        20 => Some(day20::solution),
         _ => None,
     }
 }
